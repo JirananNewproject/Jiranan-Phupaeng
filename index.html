@@ -3,299 +3,278 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Expense Ultra ProMax</title>
+<title>Thailand Countdown Ultimate V6</title>
 
-<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
+<meta name="theme-color" content="#0d47a1">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
 
 <style>
 body{
-    font-family:'Kanit',sans-serif;
-    background:#eef5ff;
+    font-family:sans-serif;
+    text-align:center;
     margin:0;
     padding:20px;
-}
-.container{
-    max-width:1200px;
-    margin:auto;
-    background:white;
-    padding:20px;
-    border-radius:12px;
-    box-shadow:0 5px 15px rgba(0,0,0,0.08);
-}
-h2{ text-align:center; color:#0d6efd; }
-
-.form-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(150px,1fr));
-    gap:10px;
-    margin-bottom:15px;
-}
-
-input,select{
-    padding:8px;
-    border-radius:6px;
-    border:1px solid #ccc;
-}
-
-button{
-    background:#0d6efd;
+    background:linear-gradient(to right,#0d47a1,#42a5f5);
     color:white;
-    border:none;
-    border-radius:6px;
-    padding:8px;
-    cursor:pointer;
 }
-button:hover{ background:#084298; }
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:10px;
-}
-th{ background:#e7f1ff; }
-th,td{
-    border:1px solid #ddd;
-    padding:8px;
-    text-align:center;
-}
-
-.card-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
-    gap:10px;
-    margin-top:20px;
-}
-
 .card{
-    background:#e7f1ff;
-    padding:15px;
+    background:white;
+    color:#333;
+    padding:20px;
+    border-radius:20px;
+    max-width:95%;
+    margin:auto;
+}
+.progress{
+    width:100%;
+    background:#ddd;
     border-radius:10px;
 }
+.bar{
+    height:15px;
+    background:#4caf50;
+    width:0%;
+}
+.celebrate{
+    font-size:40px;
+    display:none;
+    animation:pop 1s infinite alternate;
+}
+@keyframes pop{
+    from{transform:scale(1);}
+    to{transform:scale(1.2);}
+}
 
-.lock-screen{
-    position:fixed;
-    inset:0;
-    background:#ffffff;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    flex-direction:column;
+/* ===== Calendar ===== */
+#calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    margin-top: 10px;
+}
+.calendar-day, .calendar-weekday {
+    padding: 8px;
+    background:#f0f0f0;
+    border-radius:5px;
+    text-align:center;
+    word-wrap: break-word;
+    font-size:14px;
+}
+.calendar-weekday {
+    font-weight:bold;
+    background:#90caf9;
+    color:#0d47a1;
+}
+.calendar-day.travel {
+    background:#ff9800;
+    color:white;
+}
+.calendar-day.work {
+    background:#4caf50;
+    color:white;
+}
+.calendar-day.today {
+    border:2px solid #0d47a1;
+}
+
+/* ===== Responsive ===== */
+@media screen and (max-width: 480px) {
+    #calendar {
+        grid-template-columns: repeat(7, 1fr);
+    }
+    .calendar-day, .calendar-weekday {
+        font-size:12px;
+        padding:6px;
+    }
 }
 </style>
 </head>
 <body>
 
-<div id="lock" class="lock-screen">
-<h2>🔐 ใส่รหัสผ่าน</h2>
-<input type="password" id="passInput" placeholder="ตั้งรหัสครั้งแรกได้เลย">
-<button onclick="checkPassword()">เข้าสู่ระบบ</button>
+<div class="card">
+<h2>นับถอยหลังวันกลับบ้าน 😊🇹🇭</h2>
+
+<p>วันบินกลับ:</p>
+<input type="datetime-local" id="end">
+<button onclick="saveDate()">บันทึก</button>
+
+<h3 id="countdown"></h3>
+<div class="progress"><div class="bar" id="bar"></div></div>
+<div id="percent"></div>
+
+<hr>
+<h3>🌍 เวลาโลก</h3>
+<div id="world"></div>
+
+<hr>
+<h3>🛫 เส้นทางบิน (Transit)</h3>
+<div>
+ADD → Singapore (SIN) → Kuala Lumpur (KUL) → BKK<br>
+วันบินกลับ: 23 เมษายน 2026
 </div>
 
-<div class="container" id="app" style="display:none">
+<hr>
+<h3>🌤 อากาศวันเดินทาง</h3>
+<div id="weather">กำลังโหลดสภาพอากาศ...</div>
 
-<h2>💰 Expense ULTRA PROMAX</h2>
+<hr>
+<h3>📆 ปฏิทิน</h3>
+<button onclick="prevMonth()">◀ ก่อนหน้า</button>
+<button onclick="nextMonth()">ถัดไป ▶</button>
+<div id="calendar"></div>
 
-<div class="form-grid">
-<input type="date" id="date">
-<input type="text" id="item" placeholder="รายการ">
-<select id="category">
-<option>อาหาร</option>
-<option>เดินทาง</option>
-<option>ของใช้</option>
-<option>อื่นๆ</option>
-</select>
-<input type="number" id="amount" placeholder="จำนวนเงิน">
-<select id="currency">
-<option value="ETB">Birr</option>
-<option value="THB">บาท</option>
-</select>
-<input type="number" id="rate" value="0.65" step="0.01">
-<button onclick="addExpense()">เพิ่ม</button>
-<button onclick="exportExcel()">Excel</button>
-<button onclick="exportJSON()">Backup</button>
-<input type="file" onchange="importJSON(event)">
-</div>
-
-<select id="filterMonth" onchange="render()"></select>
-
-<table>
-<thead>
-<tr>
-<th>วันที่</th>
-<th>รายการ</th>
-<th>หมวด</th>
-<th>Birr</th>
-<th>บาท</th>
-<th>ลบ</th>
-</tr>
-</thead>
-<tbody id="expenseTable"></tbody>
-</table>
-
-<div class="card-grid">
-<div class="card" id="daily"></div>
-<div class="card" id="weekly"></div>
-<div class="card" id="monthly"></div>
-</div>
-
-<canvas id="monthChart"></canvas>
-<canvas id="catChart"></canvas>
-
+<div class="celebrate" id="celebrate">🎉🇹🇭✈️</div>
 </div>
 
 <script>
+// =================== SERVICE WORKER ===================
+if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('sw.js');
+}
 
-let expenses = JSON.parse(localStorage.getItem("ultraExpenses")) || [];
-let password = localStorage.getItem("expensePass");
+// =================== COUNTDOWN + PROGRESS ===================
+let endDate = new Date(localStorage.getItem("end") || "2026-04-23T12:00");
+document.getElementById("end").value = endDate.toISOString().slice(0,16);
+const startDate = new Date("2026-02-05"); // วันทำงานแรก
 
-function checkPassword(){
-    const input=document.getElementById("passInput").value;
-    if(!password){
-        localStorage.setItem("expensePass",input);
-        password=input;
+function saveDate(){
+    endDate = new Date(document.getElementById("end").value);
+    localStorage.setItem("end",endDate);
+}
+
+function update(){
+    let now = new Date();
+    let remain = endDate - now;
+
+    if(remain <= 0){
+        document.getElementById("countdown").innerHTML="🎉 ถึงวันกลับไทยแล้ว!";
+        document.getElementById("celebrate").style.display="block";
+    } else {
+        let d = Math.floor(remain/86400000);
+        let h = Math.floor((remain%86400000)/3600000);
+        let m = Math.floor((remain%3600000)/60000);
+        let s = Math.floor((remain%60000)/1000);
+
+        document.getElementById("countdown").innerHTML =
+            `เหลือ ${d} วัน ${h} ชม ${m} นาที ${s} วิ`;
+
+        // Progress bar อิงวันทำงานแรก → วันบินกลับไทย
+        let total = endDate - startDate;
+        let passed = now - startDate;
+        let percent = Math.min(Math.max((passed / total) * 100, 0), 100);
+
+        document.getElementById("bar").style.width = percent + "%";
+        document.getElementById("percent").innerHTML = "ความคืบหน้า "+percent.toFixed(1)+"%";
     }
-    if(input===password){
-        document.getElementById("lock").style.display="none";
-        document.getElementById("app").style.display="block";
-        initMonthFilter();
-        render();
-    }else{
-        alert("รหัสผิด");
+
+    // เวลาโลก
+    let thai = new Date().toLocaleString("th-TH",{timeZone:"Asia/Bangkok"});
+    let eth = new Date().toLocaleString("en-GB",{timeZone:"Africa/Addis_Ababa"});
+    let sin = new Date().toLocaleString("en-GB",{timeZone:"Asia/Singapore"});
+    let kul = new Date().toLocaleString("en-GB",{timeZone:"Asia/Kuala_Lumpur"});
+
+    document.getElementById("world").innerHTML =
+        `🇹🇭 ไทย: ${thai}<br>` +
+        `🇪🇹 เอธิโอเปีย: ${eth}<br>` +
+        `🇸🇬 สิงคโปร์: ${sin}<br>` +
+        `🇲🇾 กัวลาลัมเปอร์: ${kul}`;
+}
+
+setInterval(update,1000);
+update();
+
+// =================== WEATHER ===================
+const apiKey = "YOUR_API_KEY"; // ใส่ API Key ของ OpenWeather
+const city = "Bangkok,TH";
+
+function fetchWeather() {
+    fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`)
+    .then(res => res.json())
+    .then(data => {
+        let temp = data.main.temp.toFixed(1);
+        let desc = data.weather[0].description;
+        document.getElementById("weather").innerHTML = `🌡 ${temp}°C, ${desc}`;
+    })
+    .catch(err=>{
+        console.log(err);
+        document.getElementById("weather").innerHTML = "โหลดสภาพอากาศไม่สำเร็จ";
+    });
+}
+fetchWeather();
+setInterval(fetchWeather, 10*60*1000);
+
+// =================== CALENDAR ===================
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+
+const travelDate = new Date("2026-04-23");
+const workDate = new Date("2026-02-05");
+
+function generateCalendar(year, month){
+    const calendar = document.getElementById("calendar");
+    calendar.innerHTML = "";
+
+    const weekdays = ["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
+    weekdays.forEach(dayName=>{
+        let day = document.createElement("div");
+        day.className="calendar-weekday";
+        day.textContent=dayName;
+        calendar.appendChild(day);
+    });
+
+    const firstDay = new Date(year, month, 1).getDay();
+    const lastDate = new Date(year, month+1, 0).getDate();
+
+    for(let i=0;i<firstDay;i++){
+        let empty = document.createElement("div");
+        calendar.appendChild(empty);
+    }
+
+    for(let d=1; d<=lastDate; d++){
+        let day = document.createElement("div");
+        day.className="calendar-day";
+        day.textContent=d;
+
+        let thisDate = new Date(year, month, d);
+
+        if(thisDate.toDateString() === travelDate.toDateString()){
+            day.classList.add("travel");
+        }
+        if(thisDate.toDateString() === workDate.toDateString()){
+            day.classList.add("work");
+        }
+        const today = new Date();
+        if(thisDate.toDateString() === today.toDateString()){
+            day.classList.add("today");
+        }
+
+        calendar.appendChild(day);
     }
 }
 
-function save(){
-    localStorage.setItem("ultraExpenses",JSON.stringify(expenses));
+function prevMonth(){
+    calMonth--;
+    if(calMonth < 0){
+        calMonth = 11;
+        calYear--;
+    }
+    generateCalendar(calYear, calMonth);
+}
+function nextMonth(){
+    calMonth++;
+    if(calMonth > 11){
+        calMonth = 0;
+        calYear++;
+    }
+    generateCalendar(calYear, calMonth);
 }
 
-function addExpense(){
-    const date=dateInput.value;
-    const item=itemInput.value;
-    const category=categoryInput.value;
-    const amount=parseFloat(amountInput.value);
-    const currency=currencyInput.value;
-    const rate=parseFloat(rateInput.value);
-
-    if(!date||!item||!amount) return alert("กรอกให้ครบ");
-
-    let birr=0,baht=0;
-    if(currency==="ETB"){ birr=amount; baht=amount*rate; }
-    else{ baht=amount; birr=amount/rate; }
-
-    expenses.push({date,item,category,birr,baht});
-    save();
-    render();
-}
-
-function deleteExpense(i){
-    expenses.splice(i,1);
-    save();
-    render();
-}
-
-function render(){
-    const filter=filterMonth.value;
-    const tbody=expenseTable;
-    tbody.innerHTML="";
-
-    const filtered=filter?expenses.filter(e=>e.date.startsWith(filter)):expenses;
-
-    filtered.forEach((e,i)=>{
-        tbody.innerHTML+=`
-        <tr>
-        <td>${e.date}</td>
-        <td>${e.item}</td>
-        <td>${e.category}</td>
-        <td>${e.birr.toFixed(2)}</td>
-        <td>${e.baht.toFixed(2)}</td>
-        <td><button onclick="deleteExpense(${i})">ลบ</button></td>
-        </tr>`;
-    });
-
-    summary(filtered);
-    drawCharts();
-}
-
-function summary(list){
-    let totalBirr=0,totalBaht=0;
-    list.forEach(e=>{ totalBirr+=e.birr; totalBaht+=e.baht; });
-
-    monthly.innerHTML=`<b>รวม</b><br>${totalBirr.toFixed(2)} Birr<br>${totalBaht.toFixed(2)} บาท`;
-    daily.innerHTML="";
-    weekly.innerHTML="";
-}
-
-function initMonthFilter(){
-    const months=[...new Set(expenses.map(e=>e.date.substring(0,7)))];
-    filterMonth.innerHTML="<option value=''>ทั้งหมด</option>";
-    months.forEach(m=>{
-        filterMonth.innerHTML+=`<option value="${m}">${m}</option>`;
-    });
-}
-
-let monthChart,catChart;
-
-function drawCharts(){
-    const monthMap={},catMap={};
-
-    expenses.forEach(e=>{
-        const m=e.date.substring(0,7);
-        if(!monthMap[m]) monthMap[m]=0;
-        monthMap[m]+=e.baht;
-
-        if(!catMap[e.category]) catMap[e.category]=0;
-        catMap[e.category]+=e.baht;
-    });
-
-    if(monthChart) monthChart.destroy();
-    if(catChart) catChart.destroy();
-
-    monthChart=new Chart(monthChartCanvas,{
-        type:"bar",
-        data:{
-            labels:Object.keys(monthMap),
-            datasets:[{label:"รายเดือน (บาท)",data:Object.values(monthMap),backgroundColor:"#0d6efd"}]
-        }
-    });
-
-    catChart=new Chart(catChartCanvas,{
-        type:"pie",
-        data:{
-            labels:Object.keys(catMap),
-            datasets:[{data:Object.values(catMap)}]
-        }
-    });
-}
-
-function exportExcel(){
-    const ws=XLSX.utils.json_to_sheet(expenses);
-    const wb=XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb,ws,"Expenses");
-    XLSX.writeFile(wb,"UltraExpenses.xlsx");
-}
-
-function exportJSON(){
-    const blob=new Blob([JSON.stringify(expenses)],{type:"application/json"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement("a");
-    a.href=url;
-    a.download="backup.json";
-    a.click();
-}
-
-function importJSON(event){
-    const file=event.target.files[0];
-    const reader=new FileReader();
-    reader.onload=e=>{
-        expenses=JSON.parse(e.target.result);
-        save();
-        render();
-    };
-    reader.readAsText(file);
-}
-
+generateCalendar(calYear, calMonth);
 </script>
 
 </body>
